@@ -55,3 +55,57 @@ jwt-auth-demo/
         │               └── JwtAuthDemoApplication.java
         └── resources/
             └── application.properties                      # Configurações de BD e JWT
+⚙️ Configurações (application.properties)
+spring.application.name=jwt-auth-demo
+
+# Configuração do Banco de Dados H2
+spring.datasource.url=jdbc:h2:mem:demo_db
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+spring.h2.console.enabled=true
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.open-in-view=false
+
+# Configurações do JWT
+jwt.secret=404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+jwt.expiration=86400000
+
+⚠️ Respostas de Erro Personalizadas
+1. Não Autorizado (HTTP 401)
+Disparado ao tentar acessar um endpoint protegido sem enviar o header Authorization ou com um token inválido.
+{
+    "timestamp": "2026-09-21T18:00:00Z",
+    "status": 401,
+    "error": "Não Autorizado",
+    "message": "Autenticação necessária para acessar este recurso.",
+    "path": "/api/user/me"
+}
+
+2. Acesso Negado (HTTP 403)
+Disparado quando o usuário está autenticado, mas não possui a Role necessária para o recurso.
+{
+    "timestamp": "2026-09-21T18:00:00Z",
+    "status": 403,
+    "error": "Acesso Negado",
+    "message": "Você não tem permissão para acessar este recurso.",
+    "path": "/api/admin/dashboard"
+}
+
+🧪 Como Testar
+1. Registrar um Usuário
+PowerShell:
+Invoke-RestMethod -Uri "http://localhost:8080/api/auth/register" -Method Post -ContentType "application/json" -Body '{"username":"joao","password":"123","role":"USER"}'
+CMD / cURL:
+curl -X POST http://localhost:8080/api/auth/register -H "Content-Type: application/json" -d "{\"username\":\"joao\",\"password\":\"123\",\"role\":\"USER\"}"
+
+2. Acessar Rota Protegida com o Token
+PowerShell:
+$token = "SEU_TOKEN_AQUI"
+Invoke-RestMethod -Uri "http://localhost:8080/api/user/me" -Headers @{ Authorization = "Bearer $token" }
+CMD / cURL:
+curl -X GET http://localhost:8080/api/user/me -H "Authorization: Bearer SEU_TOKEN_AQUI"
+
+3. Testar Acesso Negado (403)
+Tente acessar a rota de Admin utilizando um token com perfil USER:
+curl -X GET http://localhost:8080/api/admin/dashboard -H "Authorization: Bearer TOKEN_DO_USUARIO_USER"
